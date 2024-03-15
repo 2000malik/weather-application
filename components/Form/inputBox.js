@@ -11,6 +11,8 @@ export const InputBox = ({
   disabled = false,
   showValidWarning = true,
   isRequired,
+  value = '',
+  handleOnInputChange,
   ...props
 }) => {
   const [isValid, setIsValid] = useState(true);
@@ -21,6 +23,8 @@ export const InputBox = ({
     <FormControl w={props.w} isRequired={isRequired} isInvalid={!isValid}>
       {label && <Label id={id} label={label} />}
       <Input
+        value={value}
+        onChange={handleOnInputChange}
         placeholder={placeholder}
         type={type}
         name={name}
