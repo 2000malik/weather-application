@@ -1,20 +1,33 @@
+import { IconToDisplay } from '@/helpers/utils';
 import { Flex, Heading } from '@chakra-ui/react';
 import React from 'react';
-import { Sun } from '../icons/Sun';
 
-export const CurrentWeatherStats = () => {
+export const CurrentWeatherStats = ({ data }) => {
+  const timeElapsed = Date.now();
+  const today = new Date(timeElapsed);
+  const dataList = () => {
+    return [
+      {
+        header: `${data?.name.toUpperCase()}, ${data?.sys?.country.toUpperCase()}`,
+        subText: ` ${today.toDateString()}`,
+      },
+      {
+        header: `${Math.round(data?.main?.temp)} °F`,
+        subText: ` ${data?.weather?.[0]?.description}`,
+      },
+      {
+        header: IconToDisplay(`${data?.weather?.[0]?.main}`),
+        subText: ``,
+      },
+    ];
+  };
   return (
     <Flex boxSizing='border-box' flexFlow='wrap' w='100%'>
-      <CurrentWeatherStatsTagContainer>
-        <CurrentWeatherStatsTag country='USA, jp' date=' Today 14 Mar' />
-      </CurrentWeatherStatsTagContainer>
-      <CurrentWeatherStatsTagContainer>
-        <CurrentWeatherStatsTag country='USA, jp' date=' Today 14 Mar' />
-      </CurrentWeatherStatsTagContainer>
-
-      <CurrentWeatherStatsTagContainer>
-        <Sun />
-      </CurrentWeatherStatsTagContainer>
+      {dataList().map(({ header, subText }) => (
+        <CurrentWeatherStatsTagContainer key={header}>
+          <CurrentWeatherStatsTag country={header} date={subText} />
+        </CurrentWeatherStatsTagContainer>
+      ))}
     </Flex>
   );
 };
