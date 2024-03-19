@@ -25,3 +25,15 @@ export const celsiusToFahrenheit = (celsius) => {
 export const milesPerHourToKmPerHour = (milesPerHour) => {
   return milesPerHour * 1.60934;
 };
+export const unitAbbreviationForTemperature = (unit) => {
+  if (unit === 'imperial') {
+    return '°F';
+  }
+  return '°C'
+};
+export const unitAbbreviationForSpeed = (unit) => {
+  if (unit === 'imperial') {
+    return 'mph';
+  }
+  return 'm/s'
+};

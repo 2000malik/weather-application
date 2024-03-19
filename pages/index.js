@@ -1,24 +1,31 @@
 import { Button } from '@/components/Button';
+import { SelectBox } from '@/components/Form/SelectBox';
 import { SearchBox } from '@/components/SearchBox';
 import { Title } from '@/components/Title';
 import { AirConditionStats } from '@/components/Weather/AirConditionStats';
 import { CurrentWeatherStats } from '@/components/Weather/CurrentWeatherStats';
 import { ForeCastCard } from '@/components/Weather/ForeCastCard';
 import { CloudSunRain } from '@/components/icons/CloudSunRain';
+import { AppContext } from '@/context';
 import { apiKEY, baseURL } from '@/helpers/constant';
 import { isObjEmpty } from '@/helpers/utils';
 import { Box, Flex, Skeleton } from '@chakra-ui/react';
 import axios from 'axios';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 
 export default function Home() {
+  const { setUnitConversion } = useContext(AppContext);
+
+  // states
   const [data, setData] = useState({});
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const [unit, setUnit] = useState('');
 
-  const getWeatherStats = () => {
-    const url = `${baseURL}/data/2.5/weather?q=${searchValue}&units=imperial&appid=${apiKEY}`;
+  // function
+  const getWeatherStats = useCallback(() => {
+    const url = `${baseURL}/data/2.5/weather?q=${searchValue}&units=${unit}&appid=${apiKEY}`;
     if (searchValue) {
       setIsLoading(true);
       axios
@@ -30,17 +37,33 @@ export default function Home() {
           setIsLoading(false);
         })
         .catch((err) => {
+          if (err?.response?.status === 404) {
+            setError(err?.response?.data?.message);
+          }
           setIsLoading(false);
-          setError(err?.response?.data?.message);
         });
     }
+  }, [searchValue, unit]);
+
+  const handleUnitConversionChange = (evt) => {
+    const value = evt.target.value;
+    if (unit !== value) {
+      setData({});
+    }
+    setUnitConversion(value);
+    setUnit(value);
   };
+
+  // side-effects
   useEffect(() => {
     if (error) {
       alert(error);
     }
   }, [error]);
+
   const isDataEmpty = isObjEmpty(data);
+
+  const labelTag = `CURRENT WEATHER in ${unit === 'metric' ? 'Celsius' : 'Fahrenheit'}`;
   return (
     <Box bg='weather-beige.primary' h='100vh' minH='100%' overflow='auto' p='5'>
       <Title label='weather forecast' fontSize='4xl' />
@@ -54,24 +77,43 @@ export default function Home() {
         minHeight='50%'
         height='fit-content'
       >
-        <Flex direction={{ base: 'column', md: 'unset' }} justifyContent='space-between'>
-          <SearchBox
-            id='search-location'
-            searchValue={searchValue}
-            onInputChange={(evt) => setSearchValue(evt.target.value)}
-            placeholder='Enter-location'
-            w={{ base: 'full', md: '50%' }}
-            mb={{ base: '3' }}
-          />
-          <Button
-            w={{ base: 'full', md: '50%' }}
-            borderRadius='20'
-            isDisabled={!searchValue}
-            isLoading={isLoading}
-            handleOnClick={getWeatherStats}
-          >
-            Search
-          </Button>
+        <Flex direction={{ base: 'column', md: 'unset' }} justifyContent='space-evenly'>
+          <Box w={{ base: 'full', md: '30%' }} mb={{ base: '3' }}>
+            {/* mr={{ base: 'unset', md: '2' }} */}
+            <SearchBox
+              id='search-location'
+              searchValue={searchValue}
+              onInputChange={(evt) => setSearchValue(evt.target.value)}
+              placeholder='Enter-location'
+              borderRadius='10px'
+              size='md'
+            />
+          </Box>
+          <Box w={{ base: 'full', md: '30%' }} mb={{ base: '3' }}>
+            <SelectBox
+              placeholder='select unit conversion'
+              options={[
+                { value: 'imperial', label: 'Fahrenheit' },
+                { value: 'metric', label: 'Celsius' },
+              ]}
+              selectValue={unit}
+              handleChange={(evt) => handleUnitConversionChange(evt)}
+              borderColor='weather-grey.primary'
+              borderRadius='10px'
+              size='md'
+            />
+          </Box>
+          <Box w={{ base: 'full', md: '30%' }} >
+            <Button
+              borderRadius='10px'
+              size='md'
+              isDisabled={!(searchValue && unit)}
+              isLoading={isLoading}
+              handleOnClick={getWeatherStats}
+            >
+              Search
+            </Button>
+          </Box>
         </Flex>
         {isLoading ? <Skeleton height='20px' /> : null}
         <Flex
@@ -87,12 +129,10 @@ export default function Home() {
           ) : (
             <Fragment>
               <Box w={{ base: 'full', md: '50%' }} borderRadius='20'>
-                <Title label='CURRENT WEATHER' fontSize='2xl' fontWeight={700} />
+                <Title label={labelTag} fontSize='2xl' fontWeight={700} />
                 <CurrentWeatherStats data={data} />
                 <Title label='AIR  CONDITIONS' fontSize='2xl' fontWeight={700} />
                 <AirConditionStats data={data} />
-                <Title label={"TODAY'S FORECAST"} fontSize='2xl' fontWeight={700} />
-                <CurrentWeatherStats />
               </Box>
               <Box w={{ base: 'full', md: '50%' }} borderRadius='20'>
                 <Title label='WEEKLY FORECAST' fontSize='2xl' fontWeight={700} />

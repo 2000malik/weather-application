@@ -1,10 +1,17 @@
-import { IconToDisplay } from '@/helpers/utils';
 import { Flex, Heading } from '@chakra-ui/react';
-import React from 'react';
+import { unitAbbreviationForTemperature } from '@/helpers/utils';
+import { useContext } from 'react';
+import { AppContext } from '@/context';
+import Image from 'next/image';
 
 export const CurrentWeatherStats = ({ data }) => {
+  const { unitConversion } = useContext(AppContext);
   const timeElapsed = Date.now();
   const today = new Date(timeElapsed);
+  const baseURL = 'https://openweathermap.org/img/wn';
+  const myLoader = () => {
+    return `${baseURL}/${data?.weather?.[0]?.icon}@2x.png`;
+  };
   const dataList = () => {
     return [
       {
@@ -12,15 +19,25 @@ export const CurrentWeatherStats = ({ data }) => {
         subText: ` ${today.toDateString()}`,
       },
       {
-        header: `${Math.round(data?.main?.temp)} °F`,
+        header: `${Math.round(data?.main?.temp)} ${unitAbbreviationForTemperature(unitConversion)}`,
         subText: ` ${data?.weather?.[0]?.description}`,
       },
       {
-        header: IconToDisplay(`${data?.weather?.[0]?.main}`),
+        header: (
+          <Image
+            alt={data?.weather?.[0]?.main || 'img'}
+            loader={myLoader}
+            src={`${baseURL}/${data?.weather?.[0]?.icon}@2x.png`}
+            unoptimized
+            width={'100'}
+            height={'100'}
+          />
+        ),
         subText: ``,
       },
     ];
   };
+
   return (
     <Flex boxSizing='border-box' flexFlow='wrap' w='100%'>
       {dataList().map(({ header, subText }) => (

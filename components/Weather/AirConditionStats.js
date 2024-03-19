@@ -6,8 +6,13 @@ import { Title } from '../Title';
 import { Wind } from '../icons/Wind';
 import { Temperature } from '../icons/Temperature';
 import { Humidity } from '../icons/Humidity';
+import { AppContext } from '@/context';
+import { useContext } from 'react';
+import { unitAbbreviationForSpeed, unitAbbreviationForTemperature } from '@/helpers/utils';
 
 export const AirConditionStats = ({ data }) => {
+  const { unitConversion } = useContext(AppContext);
+
   const dataList = () => {
     return [
       {
@@ -16,12 +21,14 @@ export const AirConditionStats = ({ data }) => {
         title: 'Clouds',
       },
       {
-        header: `${data?.wind?.speed} mph`,
+        header: `${data?.wind?.speed} ${unitAbbreviationForSpeed(unitConversion)}`,
         icon: <Wind />,
         title: 'Wind',
       },
       {
-        header: `${Math.round(data?.main?.feels_like)} °F`,
+        header: `${Math.round(data?.main?.feels_like)} ${unitAbbreviationForTemperature(
+          unitConversion
+        )}`,
         icon: <Temperature />,
         title: 'Feels Like',
       },
