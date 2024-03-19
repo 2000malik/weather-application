@@ -3,6 +3,7 @@ import { CloudMoonRain } from '@/components/icons/CloudMoonRain';
 import { CloudRain } from '@/components/icons/CloudRain';
 import { CloudShowerHeavy } from '@/components/icons/CloudShowerHeavy';
 import { Sun } from '@/components/icons/Sun';
+import { daysOfWeek } from './constant';
 
 export const isObjEmpty = (obj) => {
   return Object.keys(obj).length === 0;
@@ -29,11 +30,31 @@ export const unitAbbreviationForTemperature = (unit) => {
   if (unit === 'imperial') {
     return '°F';
   }
-  return '°C'
+  return '°C';
 };
 export const unitAbbreviationForSpeed = (unit) => {
   if (unit === 'imperial') {
     return 'mph';
   }
-  return 'm/s'
+  return 'm/s';
 };
+export const ISODateToDaysOfTheWeek = (dateStr) => {
+  const date = new Date(dateStr);
+
+  // Get the day of the week as a number (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  const dayOfWeekNumber = date.getDay();
+
+  // Array of day names
+
+
+  // Get the day name from the array using the day of the week number
+  const dayOfWeek = daysOfWeek[dayOfWeekNumber];
+  return dayOfWeek;
+};
+export function getWeekDays() {
+  const dayInAWeek = new Date().getDay();
+  const days = daysOfWeek.slice(dayInAWeek, daysOfWeek.length).concat(
+    daysOfWeek.slice(0, dayInAWeek)
+  );
+  return days;
+}

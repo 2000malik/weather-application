@@ -11,40 +11,57 @@ import { apiKEY, baseURL } from '@/helpers/constant';
 import { isObjEmpty } from '@/helpers/utils';
 import { Box, Flex, Skeleton } from '@chakra-ui/react';
 import axios from 'axios';
-import { Fragment, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 
 export default function Home() {
   const { setUnitConversion } = useContext(AppContext);
 
   // states
   const [data, setData] = useState({});
+  const [forecastData, setForecastData] = useState({});
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [unit, setUnit] = useState('');
+  const [userLocation, setUserLocation] = useState(null);
 
-  // function
-  const getWeatherStats = useCallback(() => {
+  // functions
+  const fetchData = useCallback(async (url, setDataCallback) => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(url);
+      if (response.status === 200) {
+        setDataCallback(response.data);
+      }
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        setError(err?.response?.data?.message);
+      } else {
+        setError('An error occurred while fetching data.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const getCurrentWeatherStats = useCallback(() => {
     const url = `${baseURL}/data/2.5/weather?q=${searchValue}&units=${unit}&appid=${apiKEY}`;
     if (searchValue) {
-      setIsLoading(true);
-      axios
-        .get(url)
-        .then((res) => {
-          if (res?.status === 200) {
-            setData(res?.data);
-          }
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          if (err?.response?.status === 404) {
-            setError(err?.response?.data?.message);
-          }
-          setIsLoading(false);
-        });
+      fetchData(url, setData);
     }
-  }, [searchValue, unit]);
+  }, [searchValue, unit, fetchData]);
 
+  const getWeatherForeCastStats = useCallback(() => {
+    const url = `${baseURL}/data/2.5/forecast?q=${searchValue}&units=${unit}&cnt=6&appid=${apiKEY}`;
+    if (searchValue) {
+      fetchData(url, setForecastData);
+    }
+  }, [searchValue, unit, fetchData]);
+
+  const getWeatherStats = () => {
+    getCurrentWeatherStats();
+    getWeatherForeCastStats();
+  };
   const handleUnitConversionChange = (evt) => {
     const value = evt.target.value;
     if (unit !== value) {
@@ -56,6 +73,33 @@ export default function Home() {
 
   // side-effects
   useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => {
+          if (error) {
+            setError('Geolocation error occurred. Please enter location manually.');
+          }
+        }
+      );
+    } else {
+      setError('Geolocation is not supported by this browser. Please enter location manually.');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userLocation) {
+      const url = `${baseURL}/data/2.5/weather?lat=${userLocation.latitude}&lon=${userLocation.longitude}&units=imperial&appid=${apiKEY}`;
+      fetchData(url, setData);
+    }
+  }, [userLocation, fetchData]);
+
+  useEffect(() => {
     if (error) {
       alert(error);
     }
@@ -63,7 +107,15 @@ export default function Home() {
 
   const isDataEmpty = isObjEmpty(data);
 
-  const labelTag = `CURRENT WEATHER in ${unit === 'metric' ? 'Celsius' : 'Fahrenheit'}`;
+  let labelTag = 'CURRENT WEATHER';
+  if (unit) {
+    if (unit === 'metric') {
+      labelTag += ' in Celsius';
+    } else {
+      labelTag += ' in Fahrenheit';
+    }
+  }
+
   return (
     <Box bg='weather-beige.primary' h='100vh' minH='100%' overflow='auto' p='5'>
       <Title label='weather forecast' fontSize='4xl' />
@@ -79,7 +131,6 @@ export default function Home() {
       >
         <Flex direction={{ base: 'column', md: 'unset' }} justifyContent='space-evenly'>
           <Box w={{ base: 'full', md: '30%' }} mb={{ base: '3' }}>
-            {/* mr={{ base: 'unset', md: '2' }} */}
             <SearchBox
               id='search-location'
               searchValue={searchValue}
@@ -103,7 +154,7 @@ export default function Home() {
               size='md'
             />
           </Box>
-          <Box w={{ base: 'full', md: '30%' }} >
+          <Box w={{ base: 'full', md: '30%' }}>
             <Button
               borderRadius='10px'
               size='md'
@@ -134,15 +185,24 @@ export default function Home() {
                 <Title label='AIR  CONDITIONS' fontSize='2xl' fontWeight={700} />
                 <AirConditionStats data={data} />
               </Box>
-              <Box w={{ base: 'full', md: '50%' }} borderRadius='20'>
-                <Title label='WEEKLY FORECAST' fontSize='2xl' fontWeight={700} />
-                <ForeCastCard day='Friday' />
-                <ForeCastCard day='Friday' />
-                <ForeCastCard day='Friday' />
-                <ForeCastCard day='Friday' />
-                <ForeCastCard day='Friday' />
-                <ForeCastCard day='Friday' />
-              </Box>
+              {forecastData?.list ? (
+                <Box w={{ base: 'full', md: '50%' }} borderRadius='20'>
+                  <Title label='WEEKLY FORECAST' fontSize='2xl' fontWeight={700} />
+                  {React.Children.toArray(
+                    forecastData?.list?.map((item) => (
+                      <ForeCastCard
+                        day={item?.dt_txt}
+                        image={item?.weather?.[0]?.icon}
+                        description={item?.weather?.[0]?.description}
+                        temperature={item?.main?.temp}
+                        wind={item?.wind?.speed}
+                        clouds={item?.clouds?.all}
+                        humidity={item?.main?.humidity}
+                      />
+                    ))
+                  )}
+                </Box>
+              ) : null}
             </Fragment>
           )}
         </Flex>

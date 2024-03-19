@@ -4,9 +4,27 @@ import { Temperature } from '../icons/Temperature';
 import { Wind } from '../icons/Wind';
 import { Sun } from '../icons/Sun';
 import { Cloud } from '../icons/Cloud';
-import { CloudSun } from '../icons/CloudSun';
+import { Humidity } from '../icons/Humidity';
+import { AppContext } from '@/context';
+import { useContext } from 'react';
+import {
+  ISODateToDaysOfTheWeek,
+  unitAbbreviationForSpeed,
+  unitAbbreviationForTemperature,
+} from '@/helpers/utils';
 
-export const ForeCastCard = ({ day, ...props }) => {
+export const ForeCastCard = ({
+  day,
+  image,
+  description,
+  temperature,
+  wind,
+  clouds,
+  humidity,
+  ...props
+}) => {
+  const { unitConversion } = useContext(AppContext);
+  // const forecastDays = getWeekDays();
   return (
     <Card
       bg='weather-beige.primary'
@@ -19,17 +37,23 @@ export const ForeCastCard = ({ day, ...props }) => {
         <Flex flexBasis='100%' flexGrow={0} maxWidth='100%' alignItems='center'>
           <Box alignItems='flex-start' w='100%'>
             <Heading as='h6' fontSize='sm' textTransform='capitalize'>
-              {day}
+              {ISODateToDaysOfTheWeek(day)}
             </Heading>
-            <IconTag icon={<Sun />} title='sun' />
+            <IconTag icon={<Sun />} title={description} />
           </Box>
           <Box alignItems='flex-start' w='100%'>
-            <IconTag icon={<Temperature />} title='10' />
-            <IconTag icon={<Wind />} title='wind' />
+            <IconTag
+              icon={<Temperature />}
+              title={`${temperature} ${unitAbbreviationForTemperature(unitConversion)}`}
+            />
+            <IconTag
+              icon={<Wind />}
+              title={`${wind} ${unitAbbreviationForSpeed(unitConversion)}`}
+            />
           </Box>
           <Box alignItems='flex-start' w='100%'>
-            <IconTag icon={<Cloud />} title='6 %' />
-            <IconTag icon={<CloudSun />} title='1.77 m/s' />
+            <IconTag icon={<Cloud />} title={`${clouds} %`} />
+            <IconTag icon={<Humidity />} title={`${humidity} %`} />
           </Box>
         </Flex>
       </CardBody>
