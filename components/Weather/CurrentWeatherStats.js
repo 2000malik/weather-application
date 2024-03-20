@@ -1,5 +1,5 @@
 import { Flex, Heading } from '@chakra-ui/react';
-import { unitAbbreviationForTemperature } from '@/helpers/utils';
+import { externalNextImgLoader, imgBaseURL, unitAbbreviationForTemperature } from '@/helpers/utils';
 import { useContext } from 'react';
 import { AppContext } from '@/context';
 import Image from 'next/image';
@@ -8,10 +8,6 @@ export const CurrentWeatherStats = ({ data }) => {
   const { unitConversion } = useContext(AppContext);
   const timeElapsed = Date.now();
   const today = new Date(timeElapsed);
-  const baseURL = 'https://openweathermap.org/img/wn';
-  const myLoader = () => {
-    return `${baseURL}/${data?.weather?.[0]?.icon}@2x.png`;
-  };
   const dataList = () => {
     return [
       {
@@ -26,8 +22,8 @@ export const CurrentWeatherStats = ({ data }) => {
         header: (
           <Image
             alt={data?.weather?.[0]?.main || 'img'}
-            loader={myLoader}
-            src={`${baseURL}/${data?.weather?.[0]?.icon}@2x.png`}
+            loader={() => externalNextImgLoader(data?.weather?.[0]?.icon)}
+            src={`${imgBaseURL}/${data?.weather?.[0]?.icon}@2x.png`}
             unoptimized
             width={'100'}
             height={'100'}

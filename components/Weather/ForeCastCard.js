@@ -2,16 +2,18 @@ import { Box, CardBody, Flex, Heading, Text } from '@chakra-ui/react';
 import { Card } from '../Card';
 import { Temperature } from '../icons/Temperature';
 import { Wind } from '../icons/Wind';
-import { Sun } from '../icons/Sun';
 import { Cloud } from '../icons/Cloud';
 import { Humidity } from '../icons/Humidity';
 import { AppContext } from '@/context';
 import { useContext } from 'react';
 import {
   ISODateToDaysOfTheWeek,
+  externalNextImgLoader,
+  imgBaseURL,
   unitAbbreviationForSpeed,
   unitAbbreviationForTemperature,
 } from '@/helpers/utils';
+import Image from 'next/image';
 
 export const ForeCastCard = ({
   day,
@@ -24,7 +26,18 @@ export const ForeCastCard = ({
   ...props
 }) => {
   const { unitConversion } = useContext(AppContext);
-  // const forecastDays = getWeekDays();
+  const ImageTag = () => {
+    return (
+      <Image
+        alt={image || 'img'}
+        loader={() => externalNextImgLoader(image)}
+        src={`${imgBaseURL}/${image}@2x.png`}
+        unoptimized
+        width={'25'}
+        height={'10'}
+      />
+    );
+  };
   return (
     <Card
       bg='weather-beige.primary'
@@ -39,7 +52,7 @@ export const ForeCastCard = ({
             <Heading as='h6' fontSize='sm' textTransform='capitalize'>
               {ISODateToDaysOfTheWeek(day)}
             </Heading>
-            <IconTag icon={<Sun />} title={description} />
+            <IconTag icon={<ImageTag />} title={description} />
           </Box>
           <Box alignItems='flex-start' w='100%'>
             <IconTag

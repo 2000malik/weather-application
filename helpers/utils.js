@@ -41,20 +41,13 @@ export const unitAbbreviationForSpeed = (unit) => {
 export const ISODateToDaysOfTheWeek = (dateStr) => {
   const date = new Date(dateStr);
 
-  // Get the day of the week as a number (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
   const dayOfWeekNumber = date.getDay();
 
-  // Array of day names
-
-
-  // Get the day name from the array using the day of the week number
   const dayOfWeek = daysOfWeek[dayOfWeekNumber];
   return dayOfWeek;
 };
-export function getWeekDays() {
-  const dayInAWeek = new Date().getDay();
-  const days = daysOfWeek.slice(dayInAWeek, daysOfWeek.length).concat(
-    daysOfWeek.slice(0, dayInAWeek)
-  );
-  return days;
-}
+
+export const imgBaseURL = 'https://openweathermap.org/img/wn';
+export const externalNextImgLoader = (path) => {
+  return `${imgBaseURL}/${path}@2x.png`;
+};
