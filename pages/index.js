@@ -9,12 +9,13 @@ import { CloudSunRain } from '@/components/icons/CloudSunRain';
 import { AppContext } from '@/context';
 import { apiKEY, baseURL } from '@/helpers/constant';
 import { isObjEmpty } from '@/helpers/utils';
-import { Box, Flex, Skeleton } from '@chakra-ui/react';
+import { Box, Flex, Skeleton, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 
 export default function Home() {
   const { setUnitConversion } = useContext(AppContext);
+  const toast = useToast();
 
   // states
   const [data, setData] = useState({});
@@ -44,23 +45,24 @@ export default function Home() {
     }
   }, []);
 
-  const getCurrentWeatherStats = useCallback(() => {
+  const getCurrentWeatherStats = useCallback(async () => {
     const url = `${baseURL}/data/2.5/weather?q=${searchValue}&units=${unit}&appid=${apiKEY}`;
     if (searchValue) {
-      fetchData(url, setData);
+      await fetchData(url, setData);
     }
   }, [searchValue, unit, fetchData]);
 
-  const getWeatherForeCastStats = useCallback(() => {
+  const getWeatherForeCastStats = useCallback(async () => {
     const url = `${baseURL}/data/2.5/forecast?q=${searchValue}&units=${unit}&cnt=6&appid=${apiKEY}`;
     if (searchValue) {
-      fetchData(url, setForecastData);
+      await fetchData(url, setForecastData);
     }
   }, [searchValue, unit, fetchData]);
 
-  const getWeatherStats = () => {
-    getCurrentWeatherStats();
-    getWeatherForeCastStats();
+  const getWeatherStats = async () => {
+    await getCurrentWeatherStats();
+
+    await getWeatherForeCastStats();
   };
   const handleUnitConversionChange = (evt) => {
     const value = evt.target.value;
@@ -101,9 +103,16 @@ export default function Home() {
 
   useEffect(() => {
     if (error) {
-      alert(error);
+      toast({
+        title: 'oops',
+        status: 'error',
+        position: 'top-right',
+        description: error,
+        duration: 9000,
+        isClosable: true,
+      });
     }
-  }, [error]);
+  }, [error, toast]);
 
   const isDataEmpty = isObjEmpty(data);
 
@@ -115,13 +124,13 @@ export default function Home() {
       labelTag += ' in Fahrenheit';
     }
   }
-
+  
   return (
     <Box bg='weather-beige.primary' h='100vh' minH='100%' overflow='auto' p='5'>
       <Title label='weather forecast' fontSize='4xl' />
       <Box
         p={{ base: 1, md: '5' }}
-        mx={{ base: 'unset', lg: '100' }}
+        mx={{ base: 'unset', md: 'unset', lg: '100' }}
         border='1px'
         borderColor='weather-beige.secondary'
         bg='weather-beige.secondary'
@@ -187,7 +196,7 @@ export default function Home() {
               </Box>
               {forecastData?.list ? (
                 <Box w={{ base: 'full', md: '50%' }} borderRadius='20'>
-                  <Title label='WEEKLY FORECAST' fontSize='2xl' fontWeight={700} />
+                  <Title label='FORECAST' fontSize='2xl' fontWeight={700} />
                   {React.Children.toArray(
                     forecastData?.list?.map((item) => (
                       <ForeCastCard

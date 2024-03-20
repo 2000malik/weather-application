@@ -47,14 +47,14 @@ export const ForeCastCard = ({
       {...props}
     >
       <CardBody px={{ base: 1, md: '20px' }} py='2px'>
-        <Flex flexBasis='100%' flexGrow={0} maxWidth='100%' alignItems='center'>
-          <Box alignItems='flex-start' w='100%'>
+        <Flex justifyContent='space-between'>
+          <Box>
             <Heading as='h6' fontSize='sm' textTransform='capitalize'>
               {ISODateToDaysOfTheWeek(day)}
             </Heading>
             <IconTag icon={<ImageTag />} title={description} />
           </Box>
-          <Box alignItems='flex-start' w='100%'>
+          <Box>
             <IconTag
               icon={<Temperature />}
               title={`${temperature} ${unitAbbreviationForTemperature(unitConversion)}`}
@@ -64,7 +64,7 @@ export const ForeCastCard = ({
               title={`${wind} ${unitAbbreviationForSpeed(unitConversion)}`}
             />
           </Box>
-          <Box alignItems='flex-start' w='100%'>
+          <Box>
             <IconTag icon={<Cloud />} title={`${clouds} %`} />
             <IconTag icon={<Humidity />} title={`${humidity} %`} />
           </Box>
@@ -76,11 +76,17 @@ export const ForeCastCard = ({
 
 export const IconTag = ({ icon, title, ...props }) => {
   return (
-    <Box {...props}>
+    <Flex {...props}>
       {icon}
-      <Text as='span' ml='4px' fontSize='sm' fontWeight={400}>
+      <Text
+        as='span'
+        w='full'
+        ml={{ md: '2px', lg: '3px' }}
+        fontSize={{ base: 'xs', md: 'sm' }}
+        fontWeight={400}
+      >
         {title}
       </Text>
-    </Box>
+    </Flex>
   );
 };
